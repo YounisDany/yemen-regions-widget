@@ -1,0 +1,55 @@
+{
+  "name": "yemen-regions-widget",
+  "version": "1.0.0",
+  "description": "مكتبة JavaScript لعرض المناطق اليمنية (محافظة → مديرية → عزلة → قرية) مع دعم اللغتين العربية والإنجليزية",
+  "main": "dist/yemen-regions-widget.min.js",
+  "module": "src/yemen-regions-widget.js",
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:dev && npm run build:min",
+    "build:dev": "webpack --mode development",
+    "build:min": "webpack --mode production",
+    "dev": "webpack --mode development --watch",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "yemen",
+    "regions",
+    "governorates",
+    "districts",
+    "javascript",
+    "widget",
+    "dropdown",
+    "select",
+    "arabic",
+    "english",
+    "yemen-info"
+  ],
+  "author": "Yemen Regions Widget",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YounisDany/yemen-regions-widget.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/yemen-regions-widget/issues"
+  },
+  "homepage": "https://github.com/your-username/yemen-regions-widget#readme",
+  "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^5.1.4"
+  },
+  "jsdelivr": "dist/yemen-regions-widget.min.js",
+  "unpkg": "dist/yemen-regions-widget.min.js"
+}

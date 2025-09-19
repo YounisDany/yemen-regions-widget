@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yemen Regions Widget - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .demo-section:hover {
+            transform: translateY(-5px);
+        }
+
+        .demo-section h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .demo-section h3 {
+            color: #2d3748;
+            margin: 20px 0 15px 0;
+            font-size: 1.2rem;
+        }
+
+        /* تخصيص المكتبة */
+        .yemen-regions-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .yemen-regions-select {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .yemen-regions-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .yemen-regions-select.yemen-regions-disabled {
+            background: #f7fafc;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        /* نتائج الاختيار */
+        .result-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .result-box h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .result-box pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+
+        /* أزرار التحكم */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        /* تبديل اللغة */
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        /* استجابة للشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .demo-section {
+                padding: 20px;
+            }
+
+            .yemen-regions-container {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+        }
+
+        /* تحسينات للوضع المظلم */
+        @media (prefers-color-scheme: dark) {
+            .demo-section {
+                background: #2d3748;
+                color: #e2e8f0;
+            }
+
+            .demo-section h2,
+            .demo-section h3 {
+                color: #e2e8f0;
+            }
+
+            .result-box {
+                background: #4a5568;
+                border-color: #718096;
+            }
+
+            .result-box h4 {
+                color: #e2e8f0;
+            }
+        }
+
+        /* رسوم متحركة */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .demo-section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* مؤشر التحميل */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- تبديل اللغة -->
+    <div class="language-toggle">
+        <button class="btn btn-secondary" onclick="toggleLanguage()">
+            <span id="lang-text">English</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- العنوان الرئيسي -->
+        <div class="header">
+            <h1 id="main-title">Yemen Regions Widget</h1>
+            <p id="main-subtitle">مكتبة JavaScript لعرض المناطق اليمنية مع دعم اللغتين العربية والإنجليزية</p>
+        </div>
+
+        <!-- المثال الأساسي -->
+        <div class="demo-section">
+            <h2 id="basic-title">المثال الأساسي - جميع المستويات</h2>
+            <p id="basic-desc">يعرض هذا المثال جميع المستويات: محافظة → مديرية → عزلة → قرية</p>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="resetWidget('basic')">إعادة تعيين</button>
+                <button class="btn btn-secondary" onclick="getValues('basic')">عرض القيم</button>
+            </div>
+
+            <div id="basic-widget"></div>
+            
+            <div class="result-box">
+                <h4>القيم المختارة:</h4>
+                <pre id="basic-result">{}</pre>
+            </div>
+        </div>
+
+        <!-- مثال محدود المستويات -->
+        <div class="demo-section">
+            <h2 id="limited-title">مثال محدود - محافظة ومديرية فقط</h2>
+            <p id="limited-desc">يعرض هذا المثال المحافظات والمديريات فقط</p>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="resetWidget('limited')">إعادة تعيين</button>
+                <button class="btn btn-secondary" onclick="getValues('limited')">عرض القيم</button>
+                <button class="btn btn-success" onclick="getFullData('limited')">عرض البيانات الكاملة</button>
+            </div>
+
+            <div id="limited-widget"></div>
+            
+            <div class="result-box">
+                <h4>القيم المختارة:</h4>
+                <pre id="limited-result">{}</pre>
+            </div>
+        </div>
+
+        <!-- مثال مخصص -->
+        <div class="demo-section">
+            <h2 id="custom-title">مثال مخصص - تنسيقات وخيارات متقدمة</h2>
+            <p id="custom-desc">يعرض هذا المثال إمكانيات التخصيص المتقدمة</p>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="resetWidget('custom')">إعادة تعيين</button>
+                <button class="btn btn-secondary" onclick="getValues('custom')">عرض القيم</button>
+                <button class="btn btn-success" onclick="simulateSelection()">محاكاة اختيار</button>
+            </div>
+
+            <div id="custom-widget"></div>
+            
+            <div class="result-box">
+                <h4>سجل الأحداث:</h4>
+                <pre id="custom-result">في انتظار الاختيار...</pre>
+            </div>
+        </div>
+
+        <!-- معلومات المكتبة -->
+        <div class="demo-section">
+            <h2 id="info-title">معلومات المكتبة</h2>
+            
+            <h3>التنصيب عبر npm:</h3>
+            <pre style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto;">npm install yemen-regions-widget</pre>
+            
+            <h3>التنصيب عبر CDN:</h3>
+            <pre style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto;">&lt;script src="https://cdn.jsdelivr.net/npm/yemen-regions-widget/dist/yemen-regions-widget.min.js"&gt;&lt;/script&gt;</pre>
+            
+            <h3>الاستخدام الأساسي:</h3>
+            <pre style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto;">const widget = new YemenRegionsWidget({
+    container: '#my-container',
+    language: 'ar',
+    levels: ['governorate', 'district'],
+    onChange: (values) => console.log(values)
+});</pre>
+
+            <div style="margin-top: 20px;">
+                <a href="https://github.com/your-username/yemen-regions-widget" class="btn btn-primary" target="_blank">
+                    GitHub Repository
+                </a>
+                <a href="https://www.npmjs.com/package/yemen-regions-widget" class="btn btn-secondary" target="_blank">
+                    npm Package
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- تحميل المكتبة -->
+    <script src="../dist/yemen-regions-widget.min.js"></script>
+    
+    <script>
+        // متغيرات عامة
+        let currentLanguage = 'ar';
+        let widgets = {};
+
+        // النصوص متعددة اللغات
+        const texts = {
+            ar: {
+                'main-title': 'Yemen Regions Widget',
+                'main-subtitle': 'مكتبة JavaScript لعرض المناطق اليمنية مع دعم اللغتين العربية والإنجليزية',
+                'basic-title': 'المثال الأساسي - جميع المستويات',
+                'basic-desc': 'يعرض هذا المثال جميع المستويات: محافظة → مديرية → عزلة → قرية',
+                'limited-title': 'مثال محدود - محافظة ومديرية فقط',
+                'limited-desc': 'يعرض هذا المثال المحافظات والمديريات فقط',
+                'custom-title': 'مثال مخصص - تنسيقات وخيارات متقدمة',
+                'custom-desc': 'يعرض هذا المثال إمكانيات التخصيص المتقدمة',
+                'info-title': 'معلومات المكتبة',
+                'lang-text': 'English'
+            },
+            en: {
+                'main-title': 'Yemen Regions Widget',
+                'main-subtitle': 'JavaScript library for displaying Yemeni regions with Arabic and English support',
+                'basic-title': 'Basic Example - All Levels',
+                'basic-desc': 'This example shows all levels: Governorate → District → Uzlah → Village',
+                'limited-title': 'Limited Example - Governorate and District Only',
+                'limited-desc': 'This example shows governorates and districts only',
+                'custom-title': 'Custom Example - Advanced Styling and Options',
+                'custom-desc': 'This example demonstrates advanced customization capabilities',
+                'info-title': 'Library Information',
+                'lang-text': 'العربية'
+            }
+        };
+
+        // تهيئة المكتبات
+        function initializeWidgets() {
+            // المثال الأساسي
+            widgets.basic = new YemenRegionsWidget({
+                container: '#basic-widget',
+                language: currentLanguage,
+                levels: ['governorate', 'district', 'uzlah', 'village'],
+                onChange: (values, level) => {
+                    document.getElementById('basic-result').textContent = JSON.stringify(values, null, 2);
+                },
+                onComplete: (values) => {
+                    console.log('Basic widget completed:', values);
+                }
+            });
+
+            // المثال المحدود
+            widgets.limited = new YemenRegionsWidget({
+                container: '#limited-widget',
+                language: currentLanguage,
+                levels: ['governorate', 'district'],
+                placeholders: {
+                    governorate: currentLanguage === 'ar' ? 'اختر المحافظة...' : 'Select Governorate...',
+                    district: currentLanguage === 'ar' ? 'اختر المديرية...' : 'Select District...'
+                },
+                onChange: (values, level) => {
+                    document.getElementById('limited-result').textContent = JSON.stringify(values, null, 2);
+                },
+                onComplete: (values) => {
+                    console.log('Limited widget completed:', values);
+                }
+            });
+
+            // المثال المخصص
+            widgets.custom = new YemenRegionsWidget({
+                container: '#custom-widget',
+                language: currentLanguage,
+                levels: ['governorate', 'district', 'uzlah'],
+                cssClasses: {
+                    container: 'yemen-regions-container custom-container',
+                    select: 'yemen-regions-select custom-select',
+                    disabled: 'yemen-regions-disabled custom-disabled'
+                },
+                searchEnabled: true,
+                onChange: (values, level) => {
+                    const timestamp = new Date().toLocaleTimeString();
+                    const log = `[${timestamp}] تم تغيير ${level}: ${JSON.stringify(values, null, 2)}`;
+                    document.getElementById('custom-result').textContent = log;
+                },
+                onComplete: (values) => {
+                    const timestamp = new Date().toLocaleTimeString();
+                    const log = `[${timestamp}] اكتمل الاختيار: ${JSON.stringify(values, null, 2)}`;
+                    document.getElementById('custom-result').textContent = log;
+                }
+            });
+        }
+
+        // إعادة تعيين المكتبة
+        function resetWidget(widgetName) {
+            if (widgets[widgetName]) {
+                widgets[widgetName].reset();
+                document.getElementById(widgetName + '-result').textContent = '{}';
+            }
+        }
+
+        // عرض القيم
+        function getValues(widgetName) {
+            if (widgets[widgetName]) {
+                const values = widgets[widgetName].getSelectedValues();
+                document.getElementById(widgetName + '-result').textContent = JSON.stringify(values, null, 2);
+            }
+        }
+
+        // عرض البيانات الكاملة
+        function getFullData(widgetName) {
+            if (widgets[widgetName]) {
+                const data = widgets[widgetName].getSelectedData();
+                document.getElementById(widgetName + '-result').textContent = JSON.stringify(data, null, 2);
+            }
+        }
+
+        // محاكاة اختيار
+        function simulateSelection() {
+            // هذه دالة توضيحية - في التطبيق الحقيقي يمكن برمجة اختيار تلقائي
+            alert('يمكن برمجة اختيار تلقائي هنا');
+        }
+
+        // تبديل اللغة
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+            
+            // تحديث النصوص
+            Object.keys(texts[currentLanguage]).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = texts[currentLanguage][key];
+                }
+            });
+
+            // تحديث اتجاه الصفحة
+            document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = currentLanguage;
+
+            // إعادة تهيئة المكتبات
+            Object.keys(widgets).forEach(widgetName => {
+                if (widgets[widgetName]) {
+                    widgets[widgetName].setLanguage(currentLanguage);
+                }
+            });
+        }
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // تعيين اللغة الافتراضية
+            document.documentElement.dir = 'rtl';
+            document.documentElement.lang = 'ar';
+            
+            // تهيئة المكتبات
+            initializeWidgets();
+            
+            console.log('Yemen Regions Widget Demo loaded successfully!');
+        });
+
+        // معالجة الأخطاء
+        window.addEventListener('error', function(e) {
+            console.error('Error in demo:', e.error);
+        });
+    </script>
+</body>
+</html>
