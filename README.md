@@ -14,7 +14,7 @@
 ✅ **دعم البحث**: بحث سريع داخل القوائم  
 ✅ **تخصيص كامل**: CSS classes وplaceholders قابلة للتخصيص  
 ✅ **سهولة التكامل**: دعم npm وCDN  
-✅ **بيانات محدثة**: مبنية على [مشروع Yemen-info](https://github.com/YemenOpenSource/Yemen-info)
+
 
 ## التنصيب
 
