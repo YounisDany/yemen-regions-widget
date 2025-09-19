@@ -38,9 +38,9 @@
     "url": "git+https://github.com/YounisDany/yemen-regions-widget.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/yemen-regions-widget/issues"
+    "url": "https://github.com/younisdany/yemen-regions-widget/issues"
   },
-  "homepage": "https://github.com/your-username/yemen-regions-widget#readme",
+  "homepage": "https://github.com/Younisdany/yemen-regions-widget#readme",
   "devDependencies": {
     "@babel/core": "^7.28.4",
     "@babel/preset-env": "^7.28.3",
