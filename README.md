@@ -423,10 +423,10 @@ export default {
 
 هذا المشروع مرخص تحت [رخصة MIT](LICENSE).
 
-## الشكر والتقدير
 
-- **[Yemen Open Source](https://github.com/YemenOpenSource)** لتوفير بيانات Yemen-info
-- **[مشروع Yemen-info](https://github.com/YemenOpenSource/Yemen-info)** كمصدر البيانات الأساسي
+
+
+
 
 ## الروابط
 
