@@ -10,7 +10,8 @@ module.exports = (env, argv) => {
       filename: isProduction ? 'yemen-regions-widget.min.js' : 'yemen-regions-widget.js',
       library: 'YemenRegionsWidget',
       libraryTarget: 'umd',
-      globalObject: 'this'
+      globalObject: 'this',
+      libraryExport: 'default' // تصدير الـ default export عند استخدام UMD
     },
     module: {
       rules: [

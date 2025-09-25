@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج التسجيل - مثال على استخدام Yemen Regions Widget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .registration-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .regions-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .regions-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        /* تخصيص مكتبة Yemen Regions Widget */
+        .yemen-regions-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .yemen-regions-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .yemen-regions-select {
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .yemen-regions-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .yemen-regions-select.yemen-regions-disabled {
+            background: #f1f3f4;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .selected-info {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f4fd;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .selected-info h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .selected-info p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .language-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .language-toggle:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* تحسينات للشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .registration-container {
+                padding: 25px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .language-toggle {
+                position: static;
+                margin-bottom: 20px;
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="language-toggle" onclick="toggleLanguage()">English</button>
+    
+    <div class="registration-container">
+        <div class="header">
+            <h1 id="main-title">نموذج التسجيل</h1>
+            <p id="main-subtitle">مثال على استخدام مكتبة Yemen Regions Widget</p>
+        </div>
+
+        <form id="registration-form">
+            <div class="form-group">
+                <label for="fullName" id="name-label">الاسم الكامل</label>
+                <input type="text" id="fullName" name="fullName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email" id="email-label">البريد الإلكتروني</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone" id="phone-label">رقم الهاتف</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+
+            <div class="regions-section">
+                <h3 id="location-title">اختر موقعك</h3>
+                <div id="yemen-regions"></div>
+                
+                <div class="selected-info" id="selected-info" style="display: none;">
+                    <h4 id="selected-title">الموقع المختار:</h4>
+                    <div id="selected-details"></div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submit-btn" disabled>
+                <span id="submit-text">إكمال التسجيل</span>
+            </button>
+
+            <div class="success-message" id="success-message">
+                <strong id="success-title">تم التسجيل بنجاح!</strong>
+                <p id="success-text">تم حفظ بياناتك بنجاح. سيتم التواصل معك قريباً.</p>
+            </div>
+
+            <div class="error-message" id="error-message">
+                <strong id="error-title">خطأ في التسجيل!</strong>
+                <p id="error-text">يرجى التأكد من ملء جميع الحقول المطلوبة.</p>
+            </div>
+        </form>
+    </div>
+
+    <!-- تحميل مكتبة Yemen Regions Widget -->
+    <script src="dist/yemen-regions-widget.min.js"></script>
+    
+    <script>
+        let currentLanguage = 'ar';
+        let widget = null;
+        let selectedRegionData = {};
+
+        // النصوص متعددة اللغات
+        const translations = {
+            ar: {
+                mainTitle: 'نموذج التسجيل',
+                mainSubtitle: 'مثال على استخدام مكتبة Yemen Regions Widget',
+                nameLabel: 'الاسم الكامل',
+                emailLabel: 'البريد الإلكتروني',
+                phoneLabel: 'رقم الهاتف',
+                locationTitle: 'اختر موقعك',
+                selectedTitle: 'الموقع المختار:',
+                submitText: 'إكمال التسجيل',
+                successTitle: 'تم التسجيل بنجاح!',
+                successText: 'تم حفظ بياناتك بنجاح. سيتم التواصل معك قريباً.',
+                errorTitle: 'خطأ في التسجيل!',
+                errorText: 'يرجى التأكد من ملء جميع الحقول المطلوبة.',
+                languageToggle: 'English'
+            },
+            en: {
+                mainTitle: 'Registration Form',
+                mainSubtitle: 'Example of using Yemen Regions Widget',
+                nameLabel: 'Full Name',
+                emailLabel: 'Email Address',
+                phoneLabel: 'Phone Number',
+                locationTitle: 'Choose Your Location',
+                selectedTitle: 'Selected Location:',
+                submitText: 'Complete Registration',
+                successTitle: 'Registration Successful!',
+                successText: 'Your data has been saved successfully. We will contact you soon.',
+                errorTitle: 'Registration Error!',
+                errorText: 'Please make sure to fill in all required fields.',
+                languageToggle: 'العربية'
+            }
+        };
+
+        // تهيئة الودجت
+        function initializeWidget() {
+            if (widget) {
+                // إزالة الودجت السابق
+                document.getElementById('yemen-regions').innerHTML = '';
+            }
+
+            widget = new YemenRegionsWidget({
+                container: '#yemen-regions',
+                language: currentLanguage,
+                levels: ['governorate', 'district', 'uzlah', 'village'],
+                onChange: (values, changedLevel) => {
+                    console.log('تم تغيير:', changedLevel, values);
+                    updateSelectedInfo(values);
+                    checkFormCompletion();
+                },
+                onComplete: (values) => {
+                    console.log('اكتمل الاختيار:', values);
+                    selectedRegionData = widget.getSelectedData();
+                    updateSelectedInfo(values);
+                    checkFormCompletion();
+                }
+            });
+        }
+
+        // تحديث معلومات الموقع المختار
+        function updateSelectedInfo(values) {
+            const selectedInfo = document.getElementById('selected-info');
+            const selectedDetails = document.getElementById('selected-details');
+            
+            if (values.governorate) {
+                const data = widget.getSelectedData();
+                let html = '';
+                
+                if (data.governorate) {
+                    const govName = currentLanguage === 'ar' ? data.governorate.name_ar : data.governorate.name_en;
+                    html += `<p><strong>${currentLanguage === 'ar' ? 'المحافظة' : 'Governorate'}:</strong> ${govName}</p>`;
+                }
+                
+                if (data.district) {
+                    const distName = currentLanguage === 'ar' ? data.district.name_ar : data.district.name_en;
+                    html += `<p><strong>${currentLanguage === 'ar' ? 'المديرية' : 'District'}:</strong> ${distName}</p>`;
+                }
+                
+                if (data.uzlah) {
+                    const uzlahName = currentLanguage === 'ar' ? data.uzlah.name_ar : data.uzlah.name_en;
+                    html += `<p><strong>${currentLanguage === 'ar' ? 'العزلة' : 'Uzlah'}:</strong> ${uzlahName}</p>`;
+                }
+                
+                if (data.village) {
+                    const villageName = currentLanguage === 'ar' ? data.village.name_ar : data.village.name_en;
+                    html += `<p><strong>${currentLanguage === 'ar' ? 'القرية' : 'Village'}:</strong> ${villageName}</p>`;
+                }
+                
+                selectedDetails.innerHTML = html;
+                selectedInfo.style.display = 'block';
+            } else {
+                selectedInfo.style.display = 'none';
+            }
+        }
+
+        // التحقق من اكتمال النموذج
+        function checkFormCompletion() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const values = widget ? widget.getSelectedValues() : {};
+            
+            const isFormComplete = fullName && email && phone && values.governorate && values.district;
+            document.getElementById('submit-btn').disabled = !isFormComplete;
+        }
+
+        // تبديل اللغة
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+            updateLanguage();
+            initializeWidget();
+        }
+
+        // تحديث النصوص حسب اللغة
+        function updateLanguage() {
+            const t = translations[currentLanguage];
+            
+            document.getElementById('main-title').textContent = t.mainTitle;
+            document.getElementById('main-subtitle').textContent = t.mainSubtitle;
+            document.getElementById('name-label').textContent = t.nameLabel;
+            document.getElementById('email-label').textContent = t.emailLabel;
+            document.getElementById('phone-label').textContent = t.phoneLabel;
+            document.getElementById('location-title').textContent = t.locationTitle;
+            document.getElementById('selected-title').textContent = t.selectedTitle;
+            document.getElementById('submit-text').textContent = t.submitText;
+            document.getElementById('success-title').textContent = t.successTitle;
+            document.getElementById('success-text').textContent = t.successText;
+            document.getElementById('error-title').textContent = t.errorTitle;
+            document.getElementById('error-text').textContent = t.errorText;
+            document.querySelector('.language-toggle').textContent = t.languageToggle;
+            
+            // تحديث اتجاه الصفحة
+            document.documentElement.lang = currentLanguage;
+            document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+        }
+
+        // معالجة إرسال النموذج
+        document.getElementById('registration-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                fullName: document.getElementById('fullName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                location: widget ? widget.getSelectedValues() : {},
+                locationData: selectedRegionData
+            };
+            
+            // محاكاة إرسال البيانات
+            console.log('بيانات التسجيل:', formData);
+            
+            // إظهار رسالة النجاح
+            document.getElementById('success-message').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+            
+            // إخفاء رسالة النجاح بعد 5 ثوانٍ
+            setTimeout(() => {
+                document.getElementById('success-message').style.display = 'none';
+            }, 5000);
+        });
+
+        // إضافة مستمعي الأحداث للحقول
+        document.getElementById('fullName').addEventListener('input', checkFormCompletion);
+        document.getElementById('email').addEventListener('input', checkFormCompletion);
+        document.getElementById('phone').addEventListener('input', checkFormCompletion);
+
+        // تهيئة الصفحة عند التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLanguage();
+            initializeWidget();
+        });
+    </script>
+</body>
+</html>
