@@ -49,6 +49,7 @@ class YemenRegionsWidget {
     this.data = yemenData;
     this.selectedValues = {};
     this.elements = {};
+    this.eventListeners = {}; // لتتبع مستمعي الأحداث
     
     this.init();
   }
@@ -67,9 +68,25 @@ class YemenRegionsWidget {
     }
 
     this.container = container;
+    this.validateLevels(); // إضافة التحقق من المستويات
     this.createElements();
     this.bindEvents();
     this.loadGovernorates();
+  }
+
+  validateLevels() {
+    if (!Array.isArray(this.options.levels) || this.options.levels.length === 0) {
+      throw new Error('Option `levels` must be a non-empty array.');
+    }
+    if (this.options.levels[0] !== 'governorate') {
+      throw new Error('The first level in `levels` must be `governorate`.');
+    }
+    const validLevels = ['governorate', 'district', 'uzlah', 'village'];
+    for (const level of this.options.levels) {
+      if (!validLevels.includes(level)) {
+        throw new Error(`Invalid level specified: ${level}. Valid levels are: ${validLevels.join(', ')}`);
+      }
+    }
   }
 
   createElements() {
@@ -79,6 +96,8 @@ class YemenRegionsWidget {
     // تطبيق RTL للعربية
     if (this.options.language === 'ar') {
       this.container.style.direction = 'rtl';
+    } else {
+      this.container.style.direction = 'ltr';
     }
 
     // إنشاء عناصر القوائم المنسدلة
@@ -107,16 +126,31 @@ class YemenRegionsWidget {
   }
 
   bindEvents() {
+    // إزالة مستمعي الأحداث القدامى قبل ربط الجدد
+    this.unbindEvents();
+
     // ربط الأحداث لكل قائمة منسدلة
     Object.keys(this.elements).forEach((level, index) => {
-      this.elements[level].addEventListener('change', (e) => {
+      const handler = (e) => {
         this.handleSelectionChange(level, e.target.value, index);
-      });
+      };
+      this.elements[level].addEventListener('change', handler);
+      this.eventListeners[level] = handler; // تخزين مرجع للمستمع
     });
   }
 
+  unbindEvents() {
+    Object.keys(this.eventListeners).forEach(level => {
+      if (this.elements[level] && this.eventListeners[level]) {
+        this.elements[level].removeEventListener('change', this.eventListeners[level]);
+      }
+    });
+    this.eventListeners = {};
+  }
+
   handleSelectionChange(level, value, levelIndex) {
-    this.selectedValues[level] = value;
+    // استخدام === للمقارنة مع القيمة الفارغة
+    this.selectedValues[level] = value === '' ? null : value;
 
     // مسح القوائم التالية
     const nextLevels = this.options.levels.slice(levelIndex + 1);
@@ -127,13 +161,14 @@ class YemenRegionsWidget {
 
     // تحميل البيانات للمستوى التالي
     const nextLevel = this.options.levels[levelIndex + 1];
-    if (nextLevel && value) {
+    // التحقق من أن القيمة ليست فارغة قبل تحميل المستوى التالي
+    if (nextLevel && value !== '') {
       this.loadNextLevel(level, value, nextLevel);
     }
 
     // استدعاء callback
     if (this.options.onChange) {
-      this.options.onChange(this.selectedValues, level);
+      this.options.onChange(this.getSelectedValues(), level);
     }
 
     // التحقق من اكتمال الاختيار
@@ -153,6 +188,9 @@ class YemenRegionsWidget {
       option.textContent = this.getLocalizedName(gov);
       governorateSelect.appendChild(option);
     });
+    // تفعيل قائمة المحافظات
+    governorateSelect.disabled = false;
+    governorateSelect.classList.remove(this.options.cssClasses.disabled);
   }
 
   loadNextLevel(currentLevel, currentValue, nextLevel) {
@@ -166,20 +204,23 @@ class YemenRegionsWidget {
 
     switch (nextLevel) {
       case 'district':
-        const governorate = this.data.governorates.find(g => g.id == currentValue);
+        // استخدام === للمقارنة
+        const governorate = this.data.governorates.find(g => g.id === parseInt(currentValue));
         data = governorate ? governorate.districts : [];
         break;
       
       case 'uzlah':
-        const gov = this.data.governorates.find(g => g.id == this.selectedValues.governorate);
-        const district = gov ? gov.districts.find(d => d.id == currentValue) : null;
+        // استخدام === للمقارنة
+        const gov = this.data.governorates.find(g => g.id === parseInt(this.selectedValues.governorate));
+        const district = gov ? gov.districts.find(d => d.id === parseInt(currentValue)) : null;
         data = district ? district.uzlahs : [];
         break;
       
       case 'village':
-        const g = this.data.governorates.find(g => g.id == this.selectedValues.governorate);
-        const d = g ? g.districts.find(d => d.id == this.selectedValues.district) : null;
-        const uzlah = d ? d.uzlahs.find(u => u.id == currentValue) : null;
+        // استخدام === للمقارنة
+        const g = this.data.governorates.find(g => g.id === parseInt(this.selectedValues.governorate));
+        const d = g ? g.districts.find(d => d.id === parseInt(this.selectedValues.district)) : null;
+        const uzlah = d ? d.uzlahs.find(u => u.id === parseInt(currentValue)) : null;
         data = uzlah ? uzlah.villages : [];
         break;
     }
@@ -224,10 +265,11 @@ class YemenRegionsWidget {
 
   checkCompletion() {
     const lastLevel = this.options.levels[this.options.levels.length - 1];
-    const isComplete = this.selectedValues[lastLevel] && this.selectedValues[lastLevel] !== '';
+    // التحقق من أن جميع المستويات المختارة ليست null أو ''
+    const isComplete = this.options.levels.every(level => this.selectedValues[level] !== null && this.selectedValues[level] !== '');
 
     if (isComplete && this.options.onComplete) {
-      this.options.onComplete(this.selectedValues);
+      this.options.onComplete(this.getSelectedValues());
     }
   }
 
@@ -239,19 +281,27 @@ class YemenRegionsWidget {
   // إعادة تعيين القوائم
   reset() {
     this.selectedValues = {};
-    this.options.levels.forEach((level, index) => {
-      if (index === 0) {
-        this.loadGovernorates();
-      } else {
-        this.clearSelect(level);
-      }
-    });
+    // إزالة مستمعي الأحداث قبل إعادة إنشاء العناصر
+    this.unbindEvents();
+    this.container.innerHTML = ''; // مسح العناصر الحالية
+    this.elements = {}; // إعادة تعيين العناصر
+    this.createElements(); // إعادة إنشاء العناصر
+    this.bindEvents(); // إعادة ربط الأحداث
+    this.loadGovernorates(); // إعادة تحميل المحافظات
   }
 
   // تحديث اللغة
   setLanguage(language) {
     this.options.language = language;
     
+    // تحديث النصوص الافتراضية بناءً على اللغة الجديدة
+    this.options.placeholders = {
+      governorate: language === 'ar' ? 'اختر المحافظة' : 'Select Governorate',
+      district: language === 'ar' ? 'اختر المديرية' : 'Select District',
+      uzlah: language === 'ar' ? 'اختر العزلة' : 'Select Uzlah',
+      village: language === 'ar' ? 'اختر القرية' : 'Select Village'
+    };
+
     // تطبيق/إزالة RTL
     if (language === 'ar') {
       this.container.style.direction = 'rtl';
@@ -266,6 +316,8 @@ class YemenRegionsWidget {
   // تحديث المستويات
   setLevels(levels) {
     this.options.levels = levels;
+    this.validateLevels(); // إعادة التحقق من المستويات الجديدة
+    this.unbindEvents(); // إزالة مستمعي الأحداث القدامى
     this.container.innerHTML = '';
     this.elements = {};
     this.selectedValues = {};
@@ -278,20 +330,21 @@ class YemenRegionsWidget {
   getSelectedData() {
     const result = {};
     
+    // استخدام === للمقارنة
     if (this.selectedValues.governorate) {
-      const gov = this.data.governorates.find(g => g.id == this.selectedValues.governorate);
+      const gov = this.data.governorates.find(g => g.id === parseInt(this.selectedValues.governorate));
       result.governorate = gov;
       
       if (this.selectedValues.district && gov) {
-        const district = gov.districts.find(d => d.id == this.selectedValues.district);
+        const district = gov.districts.find(d => d.id === parseInt(this.selectedValues.district));
         result.district = district;
         
         if (this.selectedValues.uzlah && district) {
-          const uzlah = district.uzlahs.find(u => u.id == this.selectedValues.uzlah);
+          const uzlah = district.uzlahs.find(u => u.id === parseInt(this.selectedValues.uzlah));
           result.uzlah = uzlah;
           
           if (this.selectedValues.village && uzlah) {
-            const village = uzlah.villages.find(v => v.id == this.selectedValues.village);
+            const village = uzlah.villages.find(v => v.id === parseInt(this.selectedValues.village));
             result.village = village;
           }
         }
@@ -323,6 +376,8 @@ const defaultCSS = `
   background-color: white;
   cursor: pointer;
   transition: border-color 0.3s ease;
+  width: 100%; /* إضافة عرض 100% لضمان ملء الحاوي */
+  box-sizing: border-box; /* لضمان أن العرض يشمل الحشوة والحدود */
 }
 
 .yemen-regions-select:focus {
@@ -343,6 +398,7 @@ const defaultCSS = `
 .yemen-regions-container-village {
   display: flex;
   flex-direction: column;
+  flex: 1; /* إضافة flex: 1 هنا أيضًا لضمان التوزيع المتساوي في جميع الحالات */
 }
 
 @media (min-width: 768px) {
@@ -351,12 +407,13 @@ const defaultCSS = `
     align-items: center;
   }
   
-  .yemen-regions-container-governorate,
+  /* إزالة flex: 1 من هنا لتجنب التكرار إذا تم تعريفه في الأعلى */
+  /* .yemen-regions-container-governorate,
   .yemen-regions-container-district,
   .yemen-regions-container-uzlah,
   .yemen-regions-container-village {
     flex: 1;
-  }
+  } */
 }
 `;
 
@@ -380,8 +437,16 @@ if (typeof module !== 'undefined' && module.exports) {
   } else {
     injectCSS();
   }
-  
-  window.YemenRegionsWidget = YemenRegionsWidget;
 }
 
 export default YemenRegionsWidget;
+
+// ملاحظة حول تحسين الأداء لملف yemen-info.json:
+// ملف yemen-info.json كبير جدًا (أكثر من 5 ميجابايت). يتم تحميل هذا الملف بالكامل في كل مرة يتم فيها تهيئة المكتبة.
+// قد يؤثر هذا على أداء التطبيق، خاصة على الأجهزة ذات الموارد المحدودة أو الاتصالات البطيئة.
+// للتحسين، يمكن النظر في الحلول التالية:
+// 1. التحميل الكسول (Lazy Loading): تحميل بيانات المستويات الدنيا (مثل العزلات والقرى) فقط عند الحاجة إليها.
+// 2. تقسيم البيانات: تقسيم ملف JSON الكبير إلى ملفات أصغر لكل محافظة أو مديرية وتحميلها ديناميكيًا.
+// 3. استخدام IndexedDB: تخزين البيانات محليًا في المتصفح بعد التحميل الأول.
+// 4. خادم خلفي (Backend Service): نقل البيانات إلى API يقوم بتقديم البيانات المطلوبة عند الطلب.
+

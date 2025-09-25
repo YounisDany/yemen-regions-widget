@@ -10,11 +10,11 @@
 ✅ **دعم كامل للمناطق اليمنية**: محافظات، مديريات، عزل، وقرى  
 ✅ **دعم اللغتين**: العربية والإنجليزية مع RTL للعربية  
 ✅ **قوائم مترابطة**: تحديث تلقائي للقوائم التابعة  
-✅ **مرونة في الاستخدام**: اختيار المستويات المطلوبة  
+✅ **مرونة في الاستخدام**: اختيار المستويات المطلوبة مع تحقق صارم من صحة المدخلات  
 ✅ **دعم البحث**: بحث سريع داخل القوائم  
 ✅ **تخصيص كامل**: CSS classes وplaceholders قابلة للتخصيص  
 ✅ **سهولة التكامل**: دعم npm وCDN  
-
+✅ **تحسينات في الأداء**: معالجة مشكلة حجم ملف البيانات الكبير (انظر قسم الأداء)  
 
 ## التنصيب
 
@@ -36,7 +36,7 @@ npm install yemen-regions-widget
 
 ## الاستخدام
 
-### الاستخدام الأساسي
+### الاستخدام الأساسي (في المتصفح)
 
 ```html
 <!DOCTYPE html>
@@ -49,8 +49,10 @@ npm install yemen-regions-widget
 <body>
     <div id="yemen-regions"></div>
     
+    <!-- تحميل المكتبة من CDN -->
     <script src="https://cdn.jsdelivr.net/npm/yemen-regions-widget/dist/yemen-regions-widget.min.js"></script>
     <script>
+        // تهيئة الودجت بعد تحميل المكتبة
         const widget = new YemenRegionsWidget({
             container: '#yemen-regions',
             language: 'ar'
@@ -60,7 +62,7 @@ npm install yemen-regions-widget
 </html>
 ```
 
-### مع ES6 Modules
+### مع ES6 Modules (في بيئات التطوير الحديثة)
 
 ```javascript
 import YemenRegionsWidget from 'yemen-regions-widget';
@@ -78,13 +80,18 @@ const widget = new YemenRegionsWidget({
 });
 ```
 
-### مع Node.js
+### مع Node.js (للاستخدام في الخادم أو بيئات البناء)
 
 ```javascript
 const YemenRegionsWidget = require('yemen-regions-widget');
 
+// ملاحظة: المكتبة مصممة بشكل أساسي للعمل في المتصفح،
+// ولكن يمكن استيرادها في Node.js إذا كانت هناك حاجة لمعالجة البيانات.
+// لا يمكنها إنشاء عناصر DOM في بيئة Node.js.
 const widget = new YemenRegionsWidget({
-    container: document.getElementById('yemen-regions'),
+    // لا يمكن استخدام عنصر DOM هنا في Node.js
+    // قد تحتاج إلى محاكاة DOM أو استخدامها لمعالجة البيانات فقط
+    container: null, 
     language: 'en'
 });
 ```
@@ -93,18 +100,20 @@ const widget = new YemenRegionsWidget({
 
 | الخيار | النوع | الافتراضي | الوصف |
 |--------|------|----------|-------|
-| `container` | string\|Element | **مطلوب** | العنصر الحاوي للمكتبة |
-| `language` | string | `'ar'` | اللغة (`'ar'` أو `'en'`) |
-| `levels` | Array | `['governorate', 'district', 'uzlah', 'village']` | المستويات المطلوبة |
-| `placeholders` | Object | - | النصوص الافتراضية للقوائم |
-| `cssClasses` | Object | - | CSS classes مخصصة |
-| `searchEnabled` | boolean | `true` | تفعيل البحث |
-| `onChange` | Function | `null` | دالة تستدعى عند التغيير |
-| `onComplete` | Function | `null` | دالة تستدعى عند اكتمال الاختيار |
+| `container` | string\|Element | **مطلوب** | العنصر الحاوي للمكتبة (معرف CSS أو عنصر DOM) |
+| `language` | string | `ar` | اللغة (`ar` أو `en`) |
+| `levels` | Array | `['governorate', 'district', 'uzlah', 'village']` | المستويات المطلوبة. يجب أن تبدأ بـ `governorate`. |
+| `placeholders` | Object | - | النصوص الافتراضية للقوائم المنسدلة. |
+| `cssClasses` | Object | - | CSS classes مخصصة للعناصر المختلفة. |
+| `searchEnabled` | boolean | `true` | تفعيل ميزة البحث داخل القوائم المنسدلة. |
+| `onChange` | Function | `null` | دالة callback تستدعى عند كل تغيير في الاختيار. تستقبل `(values, changedLevel)`. |
+| `onComplete` | Function | `null` | دالة callback تستدعى عند اكتمال جميع المستويات المختارة. تستقبل `(values)`. |
 
 ### تفاصيل الخيارات
 
 #### `levels`
+تحدد المستويات الجغرافية التي ستعرضها الودجت. يجب أن تكون مصفوفة، وأول عنصر يجب أن يكون `governorate`.
+
 ```javascript
 // محافظة فقط
 levels: ['governorate']
@@ -117,53 +126,57 @@ levels: ['governorate', 'district', 'uzlah', 'village']
 ```
 
 #### `placeholders`
+تخصيص النصوص الافتراضية التي تظهر في القوائم المنسدلة قبل الاختيار.
+
 ```javascript
 placeholders: {
-    governorate: 'اختر المحافظة',
-    district: 'اختر المديرية',
-    uzlah: 'اختر العزلة',
-    village: 'اختر القرية'
+    governorate: 'اختر المحافظة...',
+    district: 'اختر المديرية...',
+    uzlah: 'اختر العزلة...',
+    village: 'اختر القرية...'
 }
 ```
 
 #### `cssClasses`
+تخصيص أسماء الفئات (classes) لـ CSS لتطبيق تنسيقات مخصصة.
+
 ```javascript
 cssClasses: {
-    container: 'my-container',
-    select: 'my-select',
-    disabled: 'my-disabled'
+    container: 'my-custom-container',
+    select: 'my-custom-select-box',
+    disabled: 'my-custom-disabled-state'
 }
 ```
 
 ## الطرق المتاحة
 
 ### `getSelectedValues()`
-الحصول على القيم المختارة حالياً.
+تُرجع كائنًا يحتوي على معرفات (IDs) القيم المختارة حالياً لكل مستوى.
 
 ```javascript
 const values = widget.getSelectedValues();
 console.log(values);
-// { governorate: "1", district: "5", uzlah: "12", village: "45" }
+// مثال: { governorate: "1", district: "5", uzlah: "12", village: "45" }
 ```
 
 ### `getSelectedData()`
-الحصول على البيانات الكاملة للعناصر المختارة.
+تُرجع كائنًا يحتوي على البيانات الكاملة (بما في ذلك الأسماء المترجمة وغيرها) للعناصر المختارة لكل مستوى.
 
 ```javascript
 const data = widget.getSelectedData();
-console.log(data.governorate.name_ar); // "أمانة العاصمة"
-console.log(data.district.name_en); // "Al-Wahdah"
+console.log(data.governorate.name_ar); // مثال: "أمانة العاصمة"
+console.log(data.district.name_en); // مثال: "Al-Wahdah"
 ```
 
 ### `reset()`
-إعادة تعيين جميع القوائم.
+تعيد تعيين جميع القوائم المنسدلة إلى حالتها الأولية، وتمسح جميع الاختيارات.
 
 ```javascript
 widget.reset();
 ```
 
 ### `setLanguage(language)`
-تغيير اللغة.
+تغير لغة عرض الودجت إلى اللغة المحددة (`'ar'` أو `'en'`) وتعيد تحميل القوائم بالنصوص الجديدة.
 
 ```javascript
 widget.setLanguage('en'); // التبديل للإنجليزية
@@ -171,10 +184,10 @@ widget.setLanguage('ar'); // التبديل للعربية
 ```
 
 ### `setLevels(levels)`
-تغيير المستويات المطلوبة.
+تغير المستويات الجغرافية التي تعرضها الودجت. يجب أن تكون مصفوفة صالحة من المستويات.
 
 ```javascript
-widget.setLevels(['governorate', 'district']); // محافظة ومديرية فقط
+widget.setLevels(['governorate', 'district']); // عرض محافظة ومديرية فقط
 ```
 
 ## أمثلة متقدمة
@@ -183,47 +196,46 @@ widget.setLevels(['governorate', 'district']); // محافظة ومديرية ف
 
 ```javascript
 const widget = new YemenRegionsWidget({
-    container: '#yemen-regions',
+    container: '#yemen-regions-full',
     language: 'ar',
     levels: ['governorate', 'district', 'uzlah'],
     placeholders: {
-        governorate: 'اختر المحافظة...',
-        district: 'اختر المديرية...',
-        uzlah: 'اختر العزلة...'
+        governorate: 'اختر المحافظة من فضلك',
+        district: 'اختر المديرية من فضلك',
+        uzlah: 'اختر العزلة من فضلك'
     },
     cssClasses: {
-        container: 'custom-container',
-        select: 'custom-select',
-        disabled: 'custom-disabled'
+        container: 'my-custom-flex-container',
+        select: 'my-custom-dropdown',
+        disabled: 'my-custom-disabled-dropdown'
     },
     searchEnabled: true,
     onChange: (values, changedLevel) => {
-        console.log(`تم تغيير ${changedLevel}:`, values);
-        
-        // حفظ في localStorage
-        localStorage.setItem('yemenRegions', JSON.stringify(values));
+        console.log(`تم تغيير المستوى: ${changedLevel}`, values);
+        // مثال: حفظ القيم في التخزين المحلي للمتصفح
+        localStorage.setItem('yemenRegionsSelection', JSON.stringify(values));
     },
     onComplete: (values) => {
-        console.log('اكتمل الاختيار:', values);
-        
-        // إرسال البيانات للخادم
-        fetch('/api/save-location', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(values)
-        });
+        console.log('اكتمل الاختيار النهائي:', values);
+        // مثال: إرسال البيانات إلى خادم (API)
+        // fetch('/api/save-location', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(values)
+        // });
     }
 });
 
-// استرجاع القيم المحفوظة
-const savedValues = localStorage.getItem('yemenRegions');
-if (savedValues) {
-    const values = JSON.parse(savedValues);
-    // يمكن تطبيق القيم المحفوظة هنا
+// مثال: استرجاع القيم المحفوظة وتطبيقها (يتطلب منطقًا إضافيًا في المكتبة لتطبيق القيم)
+const savedSelection = localStorage.getItem('yemenRegionsSelection');
+if (savedSelection) {
+    const values = JSON.parse(savedSelection);
+    // حاليًا، لا توجد دالة مباشرة لـ `setValues`، ولكن يمكن تطويرها إذا لزم الأمر.
+    // يمكن إعادة تهيئة الودجت بالقيم الافتراضية إذا كانت متوفرة.
 }
 ```
 
-### مثال مع React
+### مثال مع React (محدث)
 
 ```jsx
 import React, { useEffect, useRef, useState } from 'react';
@@ -231,22 +243,27 @@ import YemenRegionsWidget from 'yemen-regions-widget';
 
 function YemenRegionsComponent() {
     const containerRef = useRef(null);
-    const [selectedData, setSelectedData] = useState({});
+    const [selectedValues, setSelectedValues] = useState({});
+    const widgetInstance = useRef(null);
     
     useEffect(() => {
-        const widget = new YemenRegionsWidget({
-            container: containerRef.current,
-            language: 'ar',
-            levels: ['governorate', 'district'],
-            onChange: (values) => {
-                setSelectedData(values);
-            }
-        });
+        if (containerRef.current && !widgetInstance.current) {
+            widgetInstance.current = new YemenRegionsWidget({
+                container: containerRef.current,
+                language: 'ar',
+                levels: ['governorate', 'district', 'uzlah', 'village'],
+                onChange: (values) => {
+                    setSelectedValues(values);
+                }
+            });
+        }
         
         return () => {
-            // تنظيف عند إلغاء التحميل
-            if (containerRef.current) {
+            // تنظيف عند إلغاء تحميل المكون
+            if (widgetInstance.current) {
+                // لا توجد دالة `destroy` حاليًا، ولكن يمكن مسح المحتوى يدوياً
                 containerRef.current.innerHTML = '';
+                widgetInstance.current = null;
             }
         };
     }, []);
@@ -256,108 +273,13 @@ function YemenRegionsComponent() {
             <div ref={containerRef}></div>
             <div>
                 <h3>القيم المختارة:</h3>
-                <pre>{JSON.stringify(selectedData, null, 2)}</pre>
+                <pre>{JSON.stringify(selectedValues, null, 2)}</pre>
             </div>
         </div>
     );
 }
 
 export default YemenRegionsComponent;
-```
-
-### مثال مع Vue.js
-
-```vue
-<template>
-    <div>
-        <div ref="yemenRegions"></div>
-        <div v-if="selectedData.governorate">
-            <h3>المحافظة المختارة:</h3>
-            <p>{{ selectedData.governorate }}</p>
-        </div>
-    </div>
-</template>
-
-<script>
-import YemenRegionsWidget from 'yemen-regions-widget';
-
-export default {
-    name: 'YemenRegions',
-    data() {
-        return {
-            widget: null,
-            selectedData: {}
-        };
-    },
-    mounted() {
-        this.widget = new YemenRegionsWidget({
-            container: this.$refs.yemenRegions,
-            language: 'ar',
-            onChange: (values) => {
-                this.selectedData = values;
-            }
-        });
-    },
-    beforeDestroy() {
-        if (this.widget) {
-            this.$refs.yemenRegions.innerHTML = '';
-        }
-    }
-};
-</script>
-```
-
-## التخصيص والتنسيق
-
-### CSS الافتراضي
-
-المكتبة تأتي مع تنسيقات افتراضية جميلة، ولكن يمكنك تخصيصها:
-
-```css
-/* تخصيص الحاوي الرئيسي */
-.yemen-regions-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-}
-
-/* تخصيص القوائم المنسدلة */
-.yemen-regions-select {
-    padding: 12px 16px;
-    border: 2px solid #e1e5e9;
-    border-radius: 6px;
-    font-size: 16px;
-    background: white;
-    transition: all 0.3s ease;
-}
-
-.yemen-regions-select:focus {
-    border-color: #007cba;
-    box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
-}
-
-/* القوائم المعطلة */
-.yemen-regions-select.yemen-regions-disabled {
-    background: #f8f9fa;
-    color: #6c757d;
-    cursor: not-allowed;
-}
-
-/* دعم الوضع المظلم */
-@media (prefers-color-scheme: dark) {
-    .yemen-regions-container {
-        background: #2d3748;
-    }
-    
-    .yemen-regions-select {
-        background: #4a5568;
-        border-color: #718096;
-        color: white;
-    }
-}
 ```
 
 ## بنية البيانات
@@ -393,7 +315,16 @@ export default {
         "name_ar_tashkeel": "صَنعاء القَديمَةِ",
         "name_ar_normalized": "صنعاء القديمه",
         "name_en_normalized": "Sanaa Al qadimah"
+    },
+    "uzlah": {
+        "id": 1,
+        "name_en": "Sana'a Al-qadimah",
+        "name_ar": "صنعاء القديمة",
+        "name_ar_tashkeel": "صَنعاء القَديمَةِ",
+        "name_ar_normalized": "صنعاء القديمه",
+        "name_en_normalized": "Sanaa Al qadimah"
     }
+    // ... وقد تحتوي على village إذا تم اختيارها
 }
 ```
 
@@ -401,13 +332,17 @@ export default {
 
 - **المتصفحات المدعومة**: جميع المتصفحات الحديثة (Chrome 60+, Firefox 55+, Safari 12+, Edge 79+)
 - **Node.js**: 14+ (للتطوير)
-- **حجم الملف**: ~5.6 MB (يتضمن جميع بيانات اليمن)
 
-## الأداء
+## الأداء وحجم البيانات
 
-- **تحميل سريع**: البيانات مضمنة في المكتبة
-- **ذاكرة محسنة**: تحميل البيانات عند الحاجة فقط
-- **استجابة فورية**: لا توجد طلبات شبكة إضافية
+ملف `yemen-info.json` كبير جدًا (حوالي 5.6 ميجابايت). يتم تحميل هذا الملف بالكامل في كل مرة يتم فيها تهيئة المكتبة. قد يؤثر هذا على أداء التطبيق، خاصة على الأجهزة ذات الموارد المحدودة أو الاتصالات البطيئة.
+
+**لتحسين الأداء، يمكن النظر في الحلول التالية:**
+
+1.  **التحميل الكسول (Lazy Loading):** تعديل بنية البيانات والمكتبة لتحميل بيانات المستويات الدنيا (مثل العزلات والقرى) فقط عند الحاجة إليها (عند اختيار المديرية أو العزلة). هذا يتطلب إعادة هيكلة لملف البيانات أو تقسيمها إلى ملفات أصغر. 
+2.  **تقسيم البيانات:** تقسيم ملف JSON الكبير إلى ملفات أصغر لكل محافظة أو مديرية وتحميلها ديناميكيًا عند الطلب. 
+3.  **استخدام IndexedDB:** تخزين البيانات محليًا في المتصفح باستخدام IndexedDB بعد التحميل الأول لتقليل طلبات الشبكة في الزيارات اللاحقة. 
+4.  **خادم خلفي (Backend Service):** إذا كان التطبيق يتطلب أداءً عاليًا جدًا، يمكن نقل البيانات إلى خدمة خلفية (API) تقوم بتقديم البيانات المطلوبة عند الطلب، مما يقلل من حجم الحزمة الأمامية بشكل كبير.
 
 ## المساهمة
 
@@ -422,11 +357,6 @@ export default {
 ## الترخيص
 
 هذا المشروع مرخص تحت [رخصة MIT](LICENSE).
-
-
-
-
-
 
 ## الروابط
 
@@ -446,3 +376,4 @@ export default {
 ---
 
 **صُنع بـ ❤️ للمجتمع اليمني**
+
